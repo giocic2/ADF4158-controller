@@ -9,6 +9,7 @@ void trigger();
 const int loadEnablePin = 8;
 // Data is transferred from the shift register to one of eight latches on the rising edge of loadEnablePin.
 const int chipEnablePin = 9;
+const int chipSelectNegPin = 10; // must be set as OUTPUT, also if not used.
 const int clockPin = 13;
 const int serialOutPin = 11;
 
@@ -19,43 +20,20 @@ const int serialOutPin = 11;
  */
 const int externalTriggerPin = 7;
 
-int index=0;
-
 // Register values (obtained using ADIsimPLL and ADF4158 evaluation software):
-const byte R0[] = { B10101010,
-                    B11111111,
-                    B00000000,
-                    B10101010};
-const byte R1[] = { B00000000,
-                    B00000000,
-                    B00000000,
-                    B00000000};
-const byte R2[] = { B11111111,
-                    B00000000,
-                    B11111111,
-                    B00000000};
-const byte R3[] = { B00000000,
-                    B00000000,
-                    B00000000,
-                    B00000000};
-const byte R4[] = { B00000000,
-                    B00000000,
-                    B00000000,
-                    B00000000};
-const byte R5[] = { B00000000,
-                    B00000000,
-                    B00000000,
-                    B00000000};
-const byte R6[] = { B00000000,
-                    B00000000,
-                    B00000000,
-                    B00000000};
-const byte R7[] = { B00000000,
-                    B00000000,
-                    B00000000,
-                    B00000000};
+const byte R0[] =       { 0x00, 0x00, 0x00, 0x00};
+const byte R1[] =       { 0x00, 0x00, 0x00, 0x00};
+const byte R2[] =       { 0x00, 0x00, 0x00, 0x00};
+const byte R3[] =       { 0x00, 0x00, 0x00, 0x00};
+const byte R4[] =       { 0x00, 0x00, 0x00, 0x00};
+const byte R5_ramp1[] = { 0x00, 0x00, 0x00, 0x00};
+const byte R5_ramp2[] = { 0x00, 0x00, 0x00, 0x00};
+const byte R6_ramp1[] = { 0x00, 0x00, 0x00, 0x00};
+const byte R6_ramp2[] = { 0x00, 0x00, 0x00, 0x00};
+byte R7[] =             { 0x00, 0x00, 0x00, 0x00};
 
 void setup() {
+  pinMode(chipSelectNegPin,OUTPUT);
   pinMode(loadEnablePin,OUTPUT);
   digitalWrite(loadEnablePin,LOW);
   pinMode(externalTriggerPin,OUTPUT);
@@ -63,29 +41,31 @@ void setup() {
   pinMode(chipEnablePin,OUTPUT);
   pinMode(clockPin,OUTPUT);
   pinMode(serialOutPin,OUTPUT);
-
+  
   Serial.begin(9600);
   Serial.println("SPI communication started...");
 
   SPI.beginTransaction(SPISettings(125000,MSBFIRST,SPI_MODE0)); // min. 125kHz; strange signals on clockPin line due to this line.
   trigger();
   digitalWrite(chipEnablePin,LOW);
-  delay(0.2);
+  delayMicroseconds(20);
   digitalWrite(chipEnablePin,HIGH);
-  delay(0.2);
+  delayMicroseconds(20);
 
-//  transferRegister(R7);
-//  transferRegister(R6);
-//  transferRegister(R5);
-//  transferRegister(R4);
-//  transferRegister(R3);
-//  transferRegister(R2);
-//  transferRegister(R1);
-  transferRegister(R0);
+  transferRegister(R7);
+  transferRegister(R6_ramp1);
+  transferRegister(R6_ramp2);
+  transferRegister(R5_ramp1);
+  transferRegister(R5_ramp2);
+  transferRegister(R4);
+  transferRegister(R3);
+  transferRegister(R2);
+  transferRegister(R1);
+  transferRegister(R0); //last one to be loaded (double-buffered).
 
-  delay(0.2);
+  delayMicroseconds(20);
   digitalWrite(chipEnablePin,LOW);
-  delay(0.2);
+  delayMicroseconds(20);
   SPI.endTransaction();
 
   Serial.println("SPI communication ended.");
@@ -93,25 +73,25 @@ void setup() {
   }
 
 void loop() {
-
+  
 }
 
 void transferRegister(const byte registerName[]){
   // Data transfer into shift register:
-  for (index=1; index<=BYTES_PER_REGISTER; index++){
-    SPI.transfer(registerName[BYTES_PER_REGISTER-index]);
+  for (int index=0; index<BYTES_PER_REGISTER; index++){
+    SPI.transfer(registerName[index]);
   }
   // Load into the specific 32-bits latch:
-  delay(0.2);
+  delayMicroseconds(20);
   digitalWrite(loadEnablePin,HIGH);
-  delay(0.2);
+  delayMicroseconds(100);
   digitalWrite(loadEnablePin,LOW);
   return;
 }
 
 void trigger(){
   digitalWrite(externalTriggerPin,HIGH);
-  delay(0.2);
+  delayMicroseconds(20);
   digitalWrite(externalTriggerPin,LOW);
   return;
 }
@@ -121,4 +101,5 @@ void trigger(){
  *  channel 2: clockPin
  *  trigger: EXT, level:1.2V, mode:edge, slope:positive, sweep:single
  *  vertical scale: 2V for both channels
+ *  horizontal scale: 200us, trigger anticipated of 1.184ms
  */
