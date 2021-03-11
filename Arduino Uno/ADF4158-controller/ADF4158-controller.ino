@@ -21,16 +21,16 @@ const int serialOutPin = 11;
 const int externalTriggerPin = 7;
 
 // Register values (obtained using ADIsimPLL and ADF4158 evaluation software):
-const byte R0[] =       { 0x00, 0x00, 0x00, 0x00};
-const byte R1[] =       { 0x00, 0x00, 0x00, 0x00};
-const byte R2[] =       { 0x00, 0x00, 0x00, 0x00};
-const byte R3[] =       { 0x00, 0x00, 0x00, 0x00};
-const byte R4[] =       { 0x00, 0x00, 0x00, 0x00};
-const byte R5_ramp1[] = { 0x00, 0x00, 0x00, 0x00};
-const byte R5_ramp2[] = { 0x00, 0x00, 0x00, 0x00};
-const byte R6_ramp1[] = { 0x00, 0x00, 0x00, 0x00};
-const byte R6_ramp2[] = { 0x00, 0x00, 0x00, 0x00};
-byte R7[] =             { 0x00, 0x00, 0x00, 0x00};
+const byte R0[] =       { 0x80, 0x24, 0xB8, 0x00};
+const byte R1[] =       { 0x00, 0x00, 0x00, 0x01};
+const byte R2[] =       { 0x02, 0x10, 0xFF, 0xFA};
+const byte R3[] =       { 0x00, 0x00, 0x00, 0x43};
+const byte R4[] =       { 0x00, 0x1F, 0xFF, 0x84};
+const byte R5_load1[] = { 0x00, 0x0B, 0xFF, 0xFD};
+const byte R5_load2[] = { 0x00, 0x4B, 0xFF, 0xFD};
+const byte R6_load1[] = { 0x00, 0x00, 0x00, 0x56};
+const byte R6_load2[] = { 0x00, 0x40, 0x00, 0x00};
+byte R7[] =             { 0x00, 0x02, 0xFF, 0xFF};
 
 void setup() {
   pinMode(chipSelectNegPin,OUTPUT);
@@ -53,10 +53,10 @@ void setup() {
   delayMicroseconds(20);
 
   transferRegister(R7);
-  transferRegister(R6_ramp1);
-  transferRegister(R6_ramp2);
-  transferRegister(R5_ramp1);
-  transferRegister(R5_ramp2);
+  transferRegister(R6_load1);
+  transferRegister(R6_load2);
+  transferRegister(R5_load1);
+  transferRegister(R5_load2);
   transferRegister(R4);
   transferRegister(R3);
   transferRegister(R2);
