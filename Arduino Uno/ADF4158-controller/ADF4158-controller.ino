@@ -8,7 +8,7 @@ void trigger();
 // SPI pinout
 const int loadEnablePin = 8;
 // Data is transferred from the shift register to one of eight latches on the rising edge of loadEnablePin.
-const int chipEnablePin = 9;
+const int chipEnablePin = 9; // Power-on ADF4158.
 const int chipSelectNegPin = 10; // must be set as OUTPUT, also if not used.
 const int clockPin = 13;
 const int serialOutPin = 11;
@@ -21,16 +21,17 @@ const int serialOutPin = 11;
 const int externalTriggerPin = 7;
 
 // Register values (obtained using ADIsimPLL and ADF4158 evaluation software):
-const byte R0[] =       { 0x80, 0x24, 0xB8, 0x00};
+const byte R0[] =       { 0x81, 0x22, 0x00, 0x00};
 const byte R1[] =       { 0x00, 0x00, 0x00, 0x01};
-const byte R2[] =       { 0x02, 0x10, 0xFF, 0xFA};
+const byte R2[] =       { 0x00, 0x40, 0xFD, 0x02};
 const byte R3[] =       { 0x00, 0x00, 0x00, 0x43};
-const byte R4[] =       { 0x00, 0x1F, 0xFF, 0x84};
-const byte R5_load1[] = { 0x00, 0x0B, 0xFF, 0xFD};
-const byte R5_load2[] = { 0x00, 0x4B, 0xFF, 0xFD};
+const byte R4[] =       { 0x00, 0x18, 0x7D, 0x04}; // 100ms/step
+//const byte R4[] =       { 0x00, 0x1C, 0xE2, 0x04}; // 1000ms/step
+const byte R5_load1[] = { 0x00, 0x4B, 0xFF, 0xFD};
+const byte R5_load2[] = { 0x00, 0x80, 0x00, 0x05};
 const byte R6_load1[] = { 0x00, 0x00, 0x00, 0x56};
-const byte R6_load2[] = { 0x00, 0x40, 0x00, 0x00};
-byte R7[] =             { 0x00, 0x02, 0xFF, 0xFF};
+const byte R6_load2[] = { 0x00, 0x80, 0x00, 0x06};
+byte R7[] =             { 0x00, 0x00, 0x00, 0x07};
 
 void setup() {
   pinMode(chipSelectNegPin,OUTPUT);
@@ -46,7 +47,7 @@ void setup() {
   Serial.println("SPI communication started...");
 
   SPI.beginTransaction(SPISettings(125000,MSBFIRST,SPI_MODE0)); // min. 125kHz; strange signals on clockPin line due to this line.
-  trigger();
+//  trigger();
   digitalWrite(chipEnablePin,LOW);
   delayMicroseconds(20);
   digitalWrite(chipEnablePin,HIGH);
@@ -77,6 +78,7 @@ void loop() {
 }
 
 void transferRegister(const byte registerName[]){
+  trigger();
   // Data transfer into shift register:
   for (int index=0; index<BYTES_PER_REGISTER; index++){
     SPI.transfer(registerName[index]);
@@ -86,6 +88,7 @@ void transferRegister(const byte registerName[]){
   digitalWrite(loadEnablePin,HIGH);
   delayMicroseconds(100);
   digitalWrite(loadEnablePin,LOW);
+  delay(1); // On EVB programming is 80ms.
   return;
 }
 
