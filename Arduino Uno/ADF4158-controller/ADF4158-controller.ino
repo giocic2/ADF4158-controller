@@ -21,17 +21,16 @@ const int serialOutPin = 11;
 const int externalTriggerPin = 7;
 
 // Register values (obtained using ADIsimPLL and ADF4158 evaluation software):
-const byte R0[] =       { 0x81, 0x22, 0x00, 0x00};
+const byte R0[] =       { 0x80, 0x24, 0xB8, 0x00};
 const byte R1[] =       { 0x00, 0x00, 0x00, 0x01};
-const byte R2[] =       { 0x00, 0x40, 0xFD, 0x02};
+const byte R2[] =       { 0x02, 0x10, 0xFF, 0xFA};
 const byte R3[] =       { 0x00, 0x00, 0x00, 0x43};
-const byte R4[] =       { 0x00, 0x18, 0x7D, 0x04}; // 100ms/step
-//const byte R4[] =       { 0x00, 0x1C, 0xE2, 0x04}; // 1000ms/step
+const byte R4[] =       { 0x00, 0x18, 0xC8, 0x04};
 const byte R5_load1[] = { 0x00, 0x4B, 0xFF, 0xFD};
-const byte R5_load2[] = { 0x00, 0x80, 0x00, 0x05};
+const byte R5_load2[] = { 0x00, 0x80, 0x00, 0x7D};
 const byte R6_load1[] = { 0x00, 0x00, 0x00, 0x56};
 const byte R6_load2[] = { 0x00, 0x80, 0x00, 0x06};
-byte R7[] =             { 0x00, 0x00, 0x00, 0x07};
+byte R7[] =             { 0x00, 0x02, 0xFF, 0xFF};
 
 void setup() {
   pinMode(chipSelectNegPin,OUTPUT);
@@ -51,7 +50,7 @@ void setup() {
   digitalWrite(chipEnablePin,LOW);
   delayMicroseconds(20);
   digitalWrite(chipEnablePin,HIGH);
-  delayMicroseconds(20);
+  delay(200); // Waiting time for ADF4158 power-on.
 
   transferRegister(R7);
   transferRegister(R6_load1);
@@ -64,9 +63,6 @@ void setup() {
   transferRegister(R1);
   transferRegister(R0); //last one to be loaded (double-buffered).
 
-  delayMicroseconds(20);
-  digitalWrite(chipEnablePin,LOW);
-  delayMicroseconds(20);
   SPI.endTransaction();
 
   Serial.println("SPI communication ended.");
@@ -88,7 +84,7 @@ void transferRegister(const byte registerName[]){
   digitalWrite(loadEnablePin,HIGH);
   delayMicroseconds(100);
   digitalWrite(loadEnablePin,LOW);
-  delay(1); // On EVB programming is 80ms.
+  delay(80); // On EVB programming is 80ms.
   return;
 }
 
