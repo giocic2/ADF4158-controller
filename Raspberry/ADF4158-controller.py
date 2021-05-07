@@ -39,6 +39,7 @@ def transferRegister(register):
     loadEnable.on()
     time.sleep(1e-4)
     loadEnable.off()
+    time.sleep(1e-4)
 
 # Enable ADF4158 for SPI programming
 print('SPI communication started...')
