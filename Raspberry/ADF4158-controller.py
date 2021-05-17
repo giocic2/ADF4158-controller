@@ -41,9 +41,11 @@ def transferRegister(register):
     loadEnable.off()
     time.sleep(1e-4)
 
-# Enable ADF4158 for SPI programming
-print('SPI communication started...')
+# ADF4158 power-on
 chipEnable.on()
+
+# ADF4158 programming via SPI
+print('SPI communication started...')
 time.sleep(1e-4)
 
 transferRegister(R7)
@@ -59,6 +61,4 @@ transferRegister(R0) # last one to be loaded (double-buffered)
 
 spi0.close()
 time.sleep(1e-4)
-# Disable ADF4158 after successfull programming
-chipEnable.off()
 print('SPI communication ended.')
